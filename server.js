@@ -11,6 +11,12 @@ var gameType;
 var gameTypeAvailable = new Map();
 var playerTurn;
 var players = [];
+var sockets = [];
+var currentTurn;
+var wireLeft;
+var emptyLeft;
+var bombLeft;
+var cardRevealedThisTurn;
 
 // This defines the port that we'll be listening to
 server.listen(3000);
@@ -22,32 +28,32 @@ initServer();
 io.sockets.on('connection', function(socket)
 {
 	console.log('User connected: ' + socket.id);
-	socket.emit('connectionEstabilished', {id: socket.id});
+	socket.emit('connectionEstabilished', {id: socket.id}); // retourn l'id de cette session
 
-    var player = new Player();
-    socket.on('playerName', (playerName) => {
+    socket.on('register', (playerName) => {
         console.log('User logged: ' + socket.id);
-        if (players.filter(it => it.id.includes(socket.id)) == 0) {
-            players.push({
-                id : socket.id,
-                playerName : playerName
-            });            
-        }
+        let player = new Player();
+        player.username = playerName;
+        player.id = socket.id;
+        players[socket.id] = player;
+        sockets[socket.id] = socket;
 
-        console.log("CURRENT USER IN SESSION");
+        console.log("CURRENT players IN SESSION");
         console.log(players);
 
-        io.emit('userList',{userList: {players: players}});
-    });
-	
-    socket.on('disconnect',() => {               
-        console.log('User disconnected: ' + socket.id);
-        for(let i=0; i < players.length; i++) {
-            if (players[i].id === socket.id) {
-                players.splice(i,1); 
+        socket.broadcast.emit('playerConnection', player); // previens les autres utilisateurs
+        for(let id in players) {
+            if (id != socket.id) {                
+                socket.emit('playerConnection', players[id]); // envoi la liste des autres utilisateurs
             }
         }
-        io.emit('playerDisconnection', {id: socket.id}); 
+    });
+	
+    socket.on('disconnect',() => {
+        console.log('User disconnected: ' + socket.id);
+        delete players[socket.id];
+        delete socket[socket.id];
+        socket.broadcast.emit('playerDisconnection', {id: socket.id}); 
     });
 
     socket.on('startGame', function (data) {
@@ -56,8 +62,6 @@ io.sockets.on('connection', function(socket)
     });
 
     socket.on("revealCard", function (data) {
-        data.targetPlayer;
-        data.targetCard;
     });
 
     function revealCard(target) {
@@ -76,23 +80,30 @@ function initServer() {
 
 function startGame() {
     nbPlayer = io.engine.clientsCount;
-    console.log("Nb players ", nbPlayer);
-    // utilise type de partie selon nb joueurs
-    gameType = gameTypeAvailable.get(4);
-    console.log(gameType);
-     
+    gameType = gameTypeAvailable.get(4);     // utilise type de partie selon nb joueurs
+    console.log("Starting game with ", gameType);
+    currentTurn = 4;
+    cardRevealedThisTurn = 0;
     initDeck();
     initRoles();
     distributeRoles();
-    distributeCards(3);
+    distributeCards( );
+}
 
+function endTurn() {
 }
 
 function initDeck() {
-    for (let i = 0; i < gameType.wire; i++) {
+    wireLeft = gameType.wire;
+    emptyLeft = gameType.emptyLeft;
+    bombLeft = gameType.bomb;
+}
+
+function updateDeck(){
+    for (let i = 0; i < wireLeft; i++) {
         deck.push('wire');
     }
-    for (let i = 0; i < gameType.empty; i++) {
+    for (let i = 0; i < emptyLeft; i++) {
         deck.push('empty');
     }
     for (let i = 0; i < gameType.bomb; i++) {
@@ -112,20 +123,23 @@ function initRoles() {
 }
 
 function distributeRoles() {
-    for(let i=0; i < nbPlayer; i++) {
+    for(let i=0; i < sockets.length; i++) {
         let role = roles.pop();
-        io.sockets.emit('roleAssignement', {role: role});
+        let socket = sockets[player];
+        socket.emit('roleAssignement', {role: role});
     }
 }
 
-function distributeCards(cardPerPlayer) {
-    for(let i=0; i < nbPlayer; i++) {
-        let cards = getCard(cardPerPlayer);
-        io.sockets.emit('newHand', {hand: cards});
-    }
+// distribue des cartes differentes a chaque joueur
+function distributeCards() {
+    for(let player in players) {
+        let cards = popCardFromDeck(nbPlayer);
+        let socket = sockets[player];
+        socket.emit('newHand', {hand: cards});
+    }   
 }
 
-function getCard(nbCard) {
+function popCardFromDeck(nbCard) {
     let cards = [];
     for (let i = 0; i < nbCard; i++) {
         let card = deck.pop();

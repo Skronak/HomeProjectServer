@@ -1,8 +1,6 @@
-var shortID = require('shortid');
-
 class Player {
     constructor() {
-        this.id = shortID.generate();
+        this.id = '';
         this.username = '';
         this.hand = [];
     }
