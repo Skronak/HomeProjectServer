@@ -13,6 +13,7 @@ var playerTurn;
 var players = [];
 var sockets = [];
 var currentTurn;
+var nbTurnLeft;
 var wireLeft;
 var emptyLeft;
 var bombLeft;
@@ -38,9 +39,6 @@ io.sockets.on('connection', function(socket)
         players[socket.id] = player;
         sockets[socket.id] = socket;
 
-        console.log("CURRENT players IN SESSION");
-        console.log(players);
-
         socket.broadcast.emit('playerConnection', player); // previens les autres utilisateurs
         for(let id in players) {
             if (id != socket.id) {                
@@ -48,7 +46,12 @@ io.sockets.on('connection', function(socket)
             }
         }
     });
-	
+    
+    socket.on('logUser', () => {
+        console.log("CURRENT PLAYERS REGISTERED");
+        console.log(players);
+    })
+
     socket.on('disconnect',() => {
         console.log('User disconnected: ' + socket.id);
         delete players[socket.id];
@@ -84,7 +87,9 @@ function startGame() {
     console.log("Starting game with ", gameType);
     currentTurn = 4;
     cardRevealedThisTurn = 0;
+
     initDeck();
+    updateDeck();
     initRoles();
     distributeRoles();
     distributeCards( );
@@ -99,7 +104,7 @@ function initDeck() {
     bombLeft = gameType.bomb;
 }
 
-function updateDeck(){
+function updateDeck() {
     for (let i = 0; i < wireLeft; i++) {
         deck.push('wire');
     }
@@ -133,7 +138,7 @@ function distributeRoles() {
 // distribue des cartes differentes a chaque joueur
 function distributeCards() {
     for(let player in players) {
-        let cards = popCardFromDeck(nbPlayer);
+        let cards = popCardFromDeck(currentTurn);
         let socket = sockets[player];
         socket.emit('newHand', {hand: cards});
     }   
@@ -149,6 +154,9 @@ function popCardFromDeck(nbCard) {
     return cards;
 }
 
+function nextTurn() {
+
+}
 function revealCard() {
 
 }
