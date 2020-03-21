@@ -33,6 +33,7 @@ io.sockets.on('connection', function(socket)
 
     socket.on('register', (playerName) => {
         console.log('User logged: ' + socket.id);
+		
         let player = new Player();
         player.username = playerName;
         player.id = socket.id;
@@ -128,7 +129,7 @@ function initRoles() {
 }
 
 function distributeRoles() {
-    for(let i=0; i < sockets.length; i++) {
+    for(let player in players) {	
         let role = roles.pop();
         let socket = sockets[player];
         socket.emit('roleAssignement', {role: role});
