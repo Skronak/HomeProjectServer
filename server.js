@@ -101,18 +101,19 @@ function endTurn() {
 
 function initDeck() {
     wireLeft = gameType.wire;
-    emptyLeft = gameType.emptyLeft;
+    emptyLeft = gameType.empty;
     bombLeft = gameType.bomb;
 }
 
 function updateDeck() {
+	deck = [];
     for (let i = 0; i < wireLeft; i++) {
         deck.push('wire');
     }
     for (let i = 0; i < emptyLeft; i++) {
         deck.push('empty');
     }
-    for (let i = 0; i < gameType.bomb; i++) {
+    for (let i = 0; i < bombLeft; i++) {
         deck.push('bomb');
     }
     shuffle(deck);
