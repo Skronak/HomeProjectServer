@@ -1,29 +1,35 @@
-var GameType = require('./gametype');
+var Game = require('./game');
 var server = require('http').createServer();
 var io = require('socket.io')(server);
 var Player = require('./player');
 
-var revealedCard = [];
-var deck = [];
-var roles = [];
-var nbPlayer;
-var gameType;
+// var revealedCard = [];
+// var deck = [];
+// var roles = [];
+// var nbPlayer;
+// var gameType;
 var gameTypeAvailable = new Map();
-var playerTurn;
+// var playerTurn;
 var players = [];
 var sockets = [];
-var currentTurn;
-var nbTurnLeft;
-var wireLeft;
-var emptyLeft;
-var bombLeft;
-var cardRevealedThisTurn;
+// var currentTurn;
+// var nbTurnLeft;
+// var wireLeft;
+// var emptyLeft;
+// var bombLeft;
+// var cardRevealedThisTurn;
+
+
+
 
 // This defines the port that we'll be listening to
 server.listen(3000);
 console.log ('Server Started');
 
-initServer();
+let game = new Game();
+var gameTypeAvailable = game.initGame();
+console.log("Game created");
+console.log("Gametype avalaible : ", gameTypeAvailable);
 
 // "Listens" for client connections
 io.sockets.on('connection', function(socket)
@@ -37,9 +43,13 @@ io.sockets.on('connection', function(socket)
         let player = new Player();
         player.username = playerName;
         player.id = socket.id;
-        players[socket.id] = player;
-        sockets[socket.id] = socket;
 
+
+        // game.addPlayer(player);
+        players[socket.id] = player; // Ajouter la liste de joueur a la game.
+        sockets[socket.id] = socket; // Idem
+
+        console.log("Player : ", socket.id, " is connected to the game.")
         socket.broadcast.emit('playerConnection', player); // previens les autres utilisateurs
         for(let id in players) {
             if (id != socket.id) {                
@@ -62,111 +72,103 @@ io.sockets.on('connection', function(socket)
 
     socket.on('startGame', function (data) {
         console.log('Game start !')
-        startGame();
+        startGame(sockets, players);
     });
 
-    socket.on("revealCard", function (data) {
-    });
+    // socket.on("revealCard", function (data) {
+    // });
 
-    function revealCard(target) {
-        io.emit('revealCard', target);
-        io.emit('giveToken', target);
-    }
+    // function revealCard(target) {
+    //     io.emit('revealCard', target);
+    //     io.emit('giveToken', target);
+    // }
 });
 
-function initServer() {
-    gameTypeAvailable.set(4, new GameType(15,4,1,3,1));
-    gameTypeAvailable.set(5, new GameType(19,5,1,3,2));
-    gameTypeAvailable.set(6, new GameType(23,6,1,4,2));
-    gameTypeAvailable.set(7, new GameType(27,7,1,5,2));
-    gameTypeAvailable.set(8, new GameType(31,8,1,5,3));
-}
+// function startGame() {
+//     nbPlayer = io.engine.clientsCount;
+//     // gameType = gameTypeAvailable.get(4);     // utilise type de partie selon nb joueurs
+//     console.log("Starting game with ", gameType);
+//     currentTurn = 4;
+//     cardRevealedThisTurn = 0;
 
-function startGame() {
-    nbPlayer = io.engine.clientsCount;
-    gameType = gameTypeAvailable.get(4);     // utilise type de partie selon nb joueurs
-    console.log("Starting game with ", gameType);
-    currentTurn = 4;
-    cardRevealedThisTurn = 0;
+//     initDeck();
+//     updateDeck();
+//     initRoles();
+//     distributeRoles();
+//     distributeCards( );
+// }
 
-    initDeck();
-    updateDeck();
-    initRoles();
-    distributeRoles();
-    distributeCards( );
-}
+// function endTurn() {
+// }
 
-function endTurn() {
-}
+// function initDeck() {
+//     wireLeft = gameType.wire;
+//     emptyLeft = gameType.empty;
+//     bombLeft = gameType.bomb;
+// }
 
-function initDeck() {
-    wireLeft = gameType.wire;
-    emptyLeft = gameType.empty;
-    bombLeft = gameType.bomb;
-}
+// function updateDeck() {
+// 	deck = [];
+//     for (let i = 0; i < wireLeft; i++) {
+//         deck.push('wire');
+//     }
+//     for (let i = 0; i < emptyLeft; i++) {
+//         deck.push('empty');
+//     }
+//     for (let i = 0; i < bombLeft; i++) {
+//         deck.push('bomb');
+//     }
+//     shuffle(deck);
+// }
 
-function updateDeck() {
-	deck = [];
-    for (let i = 0; i < wireLeft; i++) {
-        deck.push('wire');
-    }
-    for (let i = 0; i < emptyLeft; i++) {
-        deck.push('empty');
-    }
-    for (let i = 0; i < bombLeft; i++) {
-        deck.push('bomb');
-    }
-    shuffle(deck);
-}
+// function initRoles() {
+//     for(let i=0; i < gameType.goodGuys; i++) {
+//         roles.push('sherlock');
+//     }
+//     for(let i=0; i < gameType.badGuys; i++) {
+//         roles.push('moriarty');
+//     }
+//     shuffle(roles);
+// }
 
-function initRoles() {
-    for(let i=0; i < gameType.goodGuys; i++) {
-        roles.push('sherlock');
-    }
-    for(let i=0; i < gameType.badGuys; i++) {
-        roles.push('moriarty');
-    }
-    shuffle(roles);
-}
+// function distributeRoles() {
+//     for(let player in players) {	
+//         let role = roles.pop();
+//         let socket = sockets[player];
+//         socket.emit('roleAssignement', {role: role});
+//     }
+// }
 
-function distributeRoles() {
-    for(let player in players) {	
-        let role = roles.pop();
-        let socket = sockets[player];
-        socket.emit('roleAssignement', {role: role});
-    }
-}
+// // distribue des cartes differentes a chaque joueur
+// function distributeCards() {
+//     for(let player in players) {
+//         let cards = popCardFromDeck(currentTurn);
+//         let socket = sockets[player];
+//         socket.emit('newHand', {hand: cards});
+//     }   
+// }
 
-// distribue des cartes differentes a chaque joueur
-function distributeCards() {
-    for(let player in players) {
-        let cards = popCardFromDeck(currentTurn);
-        let socket = sockets[player];
-        socket.emit('newHand', {hand: cards});
-    }   
-}
-
-function popCardFromDeck(nbCard) {
-    let cards = [];
-    for (let i = 0; i < nbCard; i++) {
-        let card = deck.pop();
-        cards.push(card);
-    }
+// function popCardFromDeck(nbCard) {
+//     let cards = [];
+//     for (let i = 0; i < nbCard; i++) {
+//         let card = deck.pop();
+//         cards.push(card);
+//     }
     
-    return cards;
-}
+//     return cards;
+// }
 
-function nextTurn() {
+// function nextTurn() {
 
-}
-function revealCard() {
+// }
+// function revealCard() {
 
-}
+// }
 
-function shuffle(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
+// function shuffle(a) {
+//     for (let i = a.length - 1; i > 0; i--) {
+//         const j = Math.floor(Math.random() * (i + 1));
+//         [a[i], a[j]] = [a[j], a[i]];
+//     }
+//     return a;
+// }
