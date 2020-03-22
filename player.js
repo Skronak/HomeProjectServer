@@ -1,10 +1,9 @@
 class Player {
-    constructor(name, socket) {
-        this.id = socket.id;
-        this.username = name;
+    constructor(name) {
+        this.id = "";
+        this.username = "";
         this.hand = [];
         this.token = false;
-        this.socket = socket;
         this.role;
     }
 

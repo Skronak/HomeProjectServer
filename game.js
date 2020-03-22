@@ -20,28 +20,12 @@ class Game {
         return this.gameTypeAvailable;
     }
 
-    addPlayer(player) {
-        this.players.push(player);
-    }
-
-    startGame() {
+    startGame(players) {
+        this.players = players;
         console.log('Game start !');
-        this.nbPlayer = this.players.lenght;
+        this.nbPlayer = players.length;
         console.log("Number of players: ", this.nbPlayer);
-        for (let player in this.players){
-            this.players[player].socket.emit('gameStart'); // envoi d'un message de début de game.
-        }
-    // currentTurn = 4;
-    // cardRevealedThisTurn = 0;
-    
         this.gameType = this.gameTypeAvailable.get(4);     // utilise type de partie selon nb joueurs
-        this.initDeck(this.gameType);
-        this.initAndsendRoles();
-        console.log(this.players);
-        // this.updateDeck();
-    // initRoles();
-    // distributeRoles();
-    // distributeCards( );
     }
 
     initDeck() {
@@ -50,12 +34,6 @@ class Game {
 
     initAndsendRoles() {
         this.roles = new Roles(this.gameType.goodGuys, this.gameType.badGuys);
-        let i = 0;
-        for (let player in this.players){
-            this.players[player].setRole(this.roles[i++]);
-            this.players[player].socket.emit('role'); // envoi d'un message de début de game.
-            console.log("player :", this.players[player].username, " is ", this.players[player].role);
-        }
     }
 
     // updateDeck() {

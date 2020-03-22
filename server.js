@@ -38,18 +38,31 @@ io.sockets.on('connection', function(socket)
 	socket.emit('connectionEstabilished', {id: socket.id}); // retourn l'id de cette session
 
     socket.on('register', (playerName) => {
+        // console.log('User logged: ' + socket.id);
+		
+        // let player = new Player(playerName, socket);
+
+        // game.addPlayer(player);
+        // players[socket.id] = player; // Ajouter la liste de joueur a la game.
+        // console.log("Player : ", socket.id, " is connected to the game.")
+        // socket.broadcast.emit('playerConnection', player.username); // previens les autres utilisateurs
+        // for(let id in players) {
+        //     if (id != socket.id) {        
+        //         socket.emit('playerConnection', players[id].username); // envoi la liste des autres utilisateurs
+        //     }
+        // }
         console.log('User logged: ' + socket.id);
 		
-        let player = new Player(playerName, socket);
+        let player = new Player();
+        player.username = playerName;
+        player.id = socket.id;
+        players[socket.id] = player;
+        sockets[socket.id] = socket;
 
-        game.addPlayer(player);
-        players[socket.id] = player; // Ajouter la liste de joueur a la game.
-
-        console.log("Player : ", socket.id, " is connected to the game.")
-        socket.broadcast.emit('playerConnection', player.username); // previens les autres utilisateurs
+        socket.broadcast.emit('playerConnection', player); // previens les autres utilisateurs
         for(let id in players) {
             if (id != socket.id) {                
-                socket.emit('playerConnection', players[id].username); // envoi la liste des autres utilisateurs
+                socket.emit('playerConnection', players[id]); // envoi la liste des autres utilisateurs
             }
         }
     });
@@ -62,12 +75,24 @@ io.sockets.on('connection', function(socket)
     socket.on('disconnect',() => {
         console.log('User disconnected: ' + socket.id);
         delete players[socket.id];
-        delete socket[socket.id];
         socket.broadcast.emit('playerDisconnection', {id: socket.id}); 
     });
 
     socket.on('startGame', function (data) {
         game.startGame(players);
+        // for (let player in players){
+        //     sockets[player.id].emit('gameStart'); // envoi d'un message de début de game.
+        // }
+
+        game.initDeck();
+
+        let roles = game.initAndsendRoles();
+        // let i = 0;
+        // for (let player in players){
+        //     players[player].setRole(roles[i++]);
+        //     players[player].socket.emit('role'); // envoi d'un message de début de game.
+        //     console.log("player :", players[player].username, " is ", players[player].role);
+        // }
     });
 
     // socket.on("revealCard", function (data) {

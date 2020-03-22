@@ -13,6 +13,7 @@ class Roles {
         }
         this.shuffle(this.roles);
 
+        console.log("List of role : ", this.roles);
         return this.roles;
     }
 
