@@ -37,12 +37,14 @@ class Game {
     }
 
     pickRole(id) {	
-        console.log(this.players);
-        console.log(id);
         let role = this.roles.pop();
         this.players[id].role = role;
 
         return role;
+    }
+
+    distribute() {
+        return this.deck.distributeCard(this.players);
     }
     // updateDeck() {
 	//     this.deck = [];

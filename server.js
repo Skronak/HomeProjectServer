@@ -27,7 +27,6 @@ io.sockets.on('connection', function(socket)
         let player = new Player();
         player.username = playerName;
         player.id = socket.id;
-        socket.test = "TEST";
         players[socket.id] = player;
         sockets[socket.id] = socket;
         socket.broadcast.emit('playerConnection', player); // previens les autres utilisateurs
@@ -60,13 +59,22 @@ io.sockets.on('connection', function(socket)
             sockets[player].emit('roleAssigment', { role : role }); // envoi d'un message de début de game.
             console.log("player :", players[player].username, " is ", players[player].role);
         }
+
+        console.log("Distribution en cours :");
+        console.log(game.distribute());
+        // TO DO
+        // EMIT DES CARTES AUX JOUEURS
     });
 
-    // socket.on("revealCard", function (data) {
-    // });
 
-    // function revealCard(target) {
-    //     io.emit('revealCard', target);
-    //     io.emit('giveToken', target);
-    // }
+    socket.on('cardHover', function (data) {
+        console.log("Une carte est en surbrillance : joueur ", data.joueur, " position : ", data.pos);
+        // socket.broadcast.emit('cardHover', data); // previens les autres utilisateurs qu'une carte est pre selectionner
+    });
+
+    socket.on("revealCard", function (data) {
+        console.log("Une carte est a retourner : joueur ", data.joueur, " position : ", data.pos);
+        // data.value = game.getCardRevealed();
+        // io.emit('revealCard', data);
+    });
 });
