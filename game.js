@@ -26,16 +26,24 @@ class Game {
         this.nbPlayer = players.length;
         console.log("Number of players: ", this.nbPlayer);
         this.gameType = this.gameTypeAvailable.get(4);     // utilise type de partie selon nb joueurs
-    }
+    
+        this.roles = new Roles(this.gameType.goodGuys, this.gameType.badGuys);
+        }
 
     initDeck() {
         this.deck = new Deck(this.gameType.wire, this.gameType.empty, this.gameType.bomb);
+
+        return this.deck;
     }
 
-    initAndsendRoles() {
-        this.roles = new Roles(this.gameType.goodGuys, this.gameType.badGuys);
-    }
+    pickRole(id) {	
+        console.log(this.players);
+        console.log(id);
+        let role = this.roles.pop();
+        this.players[id].role = role;
 
+        return role;
+    }
     // updateDeck() {
 	//     this.deck = [];
     //     for (let i = 0; i < wireLeft; i++) {

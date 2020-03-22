@@ -4,7 +4,7 @@ class Player {
         this.username = "";
         this.hand = [];
         this.token = false;
-        this.role;
+        this.role = "";
     }
 
     setRole(role) {
