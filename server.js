@@ -65,15 +65,26 @@ io.sockets.on('connection', function(socket)
         deck = game.distribute();
         for (let player in players) {
             hand = [];
+            mapPlayer = new Map();
             for (let card in deck) {
                 if (deck[card].player === players[player].id) {
                     hand.push(deck[card])
                 }
+                else {
+                    if (!mapPlayer[deck[card].player]) {
+                        mapPlayer[deck[card].player] = [];
+                        mapPlayer[deck[card].player].push(deck[card].id);
+                    } 
+                    else {
+                        mapPlayer[deck[card].player].push(deck[card].id);
+                    }
+                }
             }
             console.log("Main du joueur ", players[player]);
             console.log(hand);
-            sockets[player].emit('sendCard', { hand : hand });
-            sockets[player].emit('otherCard', { players : "hand" });
+            console.log("Main des autres:", mapPlayer);
+            sockets[player].emit('sendCard', { hand });
+            sockets[player].emit('otherCard', { mapPlayer });
             // players: [
             //     playerId: "",
             //     playerHand: [1,2,3]

@@ -10,14 +10,15 @@ class Deck {
     }
 
     createDeck() {
+        let idCard = 0;
         for (let i = 0; i < this.empty; i++) {
-            this.deck.push(new Card(i, 0));
+            this.deck.push(new Card(idCard++, 0));
         }
         for (let i = 0; i < this.wire; i++) {
-            this.deck.push(new Card(i, 1));
+            this.deck.push(new Card(idCard++, 1));
         }
         for (let i = 0; i < this.bomb; i++) {
-            this.deck.push(new Card(i, 2));
+            this.deck.push(new Card(idCard++, 2));
         }
         this.shuffle(this.deck);
         console.log("Deck created :");
