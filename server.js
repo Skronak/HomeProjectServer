@@ -85,24 +85,61 @@ io.sockets.on('connection', function(socket)
             console.log("Main des autres:", mapPlayer);
             sockets[player].emit('sendCard', { hand });
             sockets[player].emit('otherCard', { mapPlayer });
-            // players: [
-            //     playerId: "",
-            //     playerHand: [1,2,3]
-            //  ]
+            tour = 0;
         }
 
-        // io.emit('token', game.getFirstPlayer(socket.id));
+        io.emit('token', game.getFirstPlayer(socket.id));
     });
 
 
     socket.on('cardHover', function (idCard) {
-        console.log("Une carte est en surbrillance : ", idCard);
-        socket.broadcast.emit('cardHover', { hover : idCard }); // previens les autres utilisateurs qu'une carte est pre selectionner
+        if (players[socket.id].token === true) {
+            console.log("Une carte est en surbrillance : ", idCard);
+            socket.broadcast.emit('cardHover', { hover : idCard }); // previens les autres utilisateurs qu'une carte est pre selectionner
+        }
     });
 
     socket.on("revealCard", function (idCard) {
-        console.log("Une carte a reveal : ", idCard);
-        card = game.getCardRevealed(idCard);
-        io.emit('revealCard', { reveal : card.id });
+        if (players[socket.id].token === true) {
+            console.log("Une carte a reveal : ", idCard);
+            card = game.getCardRevealed(idCard);
+            io.emit('revealCard', { reveal : card.id });
+
+            players[socket.id].token = false;
+            players[card.player].token = true;
+            io.emit('token', game.getPlayerToken());
+        
+            tour++;
+            if (tour >= game.getNbPlayer()) {
+                tour = 0;
+                console.log("Distribution en cours :");
+                deck = game.distribute();
+                for (let player in players) {
+                    hand = [];
+                    mapPlayer = new Map();
+                    for (let card in deck) {
+                        if (deck[card].player === players[player].id) {
+                            hand.push(deck[card])
+                        }
+                        else {
+                            if (!mapPlayer[deck[card].player]) {
+                                mapPlayer[deck[card].player] = [];
+                                mapPlayer[deck[card].player].push(deck[card].id);
+                            } 
+                            else {
+                                mapPlayer[deck[card].player].push(deck[card].id);
+                            }
+                        }
+                    }
+                    console.log("Main du joueur ", players[player]);
+                    console.log(hand);
+                    console.log("Main des autres:", mapPlayer);
+                    sockets[player].emit('sendCard', { hand });
+                    sockets[player].emit('otherCard', { mapPlayer });
+                }
+            } else {
+                socket.emit("notyourturn");
+            }
+        }
     });
 });
