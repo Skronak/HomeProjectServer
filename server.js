@@ -91,7 +91,7 @@ io.sockets.on('connection', function(socket)
 
     socket.on("revealCard", function (idCard) {
         console.log("Une carte a reveal : ", idCard);
-        card = game.getCardRevealed();
+        card = game.getCardRevealed(idCard);
         io.emit('revealCard', { reveal : card.id });
     });
 });
