@@ -61,20 +61,29 @@ io.sockets.on('connection', function(socket)
         }
 
         console.log("Distribution en cours :");
-        console.log(game.distribute());
-        // TO DO
-        // EMIT DES CARTES AUX JOUEURS
+        deck = game.distribute();
+        for (let player in players) {
+            hand = [];
+            for (let card in deck) {
+                if (deck[card].player === players[player].id) {
+                    hand.push(deck[card])
+                }
+            }
+            console.log("Main du joueur ", players[player]);
+            console.log(hand);
+            sockets[player].emit('sendCard', { hand : hand });
+        }
     });
 
 
     socket.on('cardHover', function (data) {
         console.log("Une carte est en surbrillance : joueur ", data.joueur, " position : ", data.pos);
-        // socket.broadcast.emit('cardHover', data); // previens les autres utilisateurs qu'une carte est pre selectionner
+        socket.broadcast.emit('cardHover', { hover : "test" }); // previens les autres utilisateurs qu'une carte est pre selectionner
     });
 
     socket.on("revealCard", function (data) {
         console.log("Une carte est a retourner : joueur ", data.joueur, " position : ", data.pos);
         // data.value = game.getCardRevealed();
-        // io.emit('revealCard', data);
+        io.emit('revealCard', { hand : "test" });
     });
 });
