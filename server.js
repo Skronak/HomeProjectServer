@@ -73,20 +73,25 @@ io.sockets.on('connection', function(socket)
             console.log("Main du joueur ", players[player]);
             console.log(hand);
             sockets[player].emit('sendCard', { hand : hand });
+            sockets[player].emit('otherCard', { players : "hand" });
+            // players: [
+            //     playerId: "",
+            //     playerHand: [1,2,3]
+            //  ]
         }
 
-        io.emit('playerWhoBegin', { first : game.getFirstPlayer(socket.id) });
+        // io.emit('token', game.getFirstPlayer(socket.id));
     });
 
 
-    socket.on('cardHover', function (data) {
-        // console.log("Une carte est en surbrillance : joueur ", data.joueur, " position : ", data.pos);
-        socket.broadcast.emit('cardHover', { hover : "test" }); // previens les autres utilisateurs qu'une carte est pre selectionner
+    socket.on('cardHover', function (idCard) {
+        console.log("Une carte est en surbrillance : ", idCard);
+        socket.broadcast.emit('cardHover', { hover : idCard }); // previens les autres utilisateurs qu'une carte est pre selectionner
     });
 
-    socket.on("revealCard", function (data) {
-        // console.log("Une carte est a retourner : joueur ", data.joueur, " position : ", data.pos);
-        // data.value = game.getCardRevealed();
-        io.emit('revealCard', { hand : "test" });
+    socket.on("revealCard", function (idCard) {
+        console.log("Une carte a reveal : ", idCard);
+        card = game.getCardRevealed();
+        io.emit('revealCard', { reveal : card.id });
     });
 });

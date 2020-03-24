@@ -5,6 +5,8 @@ var Roles = require('./roles');
 class Game {
     constructor() {
         this.players = [];
+        this.deck = [];
+        this.defausse = [];
         this.gameTypeAvailable = new Map();
     }
 
@@ -50,6 +52,29 @@ class Game {
     getFirstPlayer(socketId) {
         this.players[socketId].token = true;
         return socketId;
+    }
+
+    getCardRevealed(idCard) {
+        for (let card in this.deck.deck) {
+            if (this.deck.deck[card].id === idCard) {
+                card = this.deck.deck[card];
+                this.defausse.push(card);
+                this.deck.deck = this.arrayRemove(this.deck.deck, idCard);
+
+                console.log("Defausse :", this.defausse);
+                console.log("Nouveau deck :", this.deck);
+                console.log("Carte retirée :", card);
+                return card;
+            }
+        }
+        return null;
+    }
+
+    arrayRemove(arr, value) {
+        arr = Object.values(arr).filter(function(returnableObjects){
+            return returnableObjects.id !== value;
+        });
+        return arr;
     }
     // updateDeck() {
 	//     this.deck = [];
