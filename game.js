@@ -46,6 +46,11 @@ class Game {
     distribute() {
         return this.deck.distributeCard(this.players);
     }
+
+    getFirstPlayer(socketId) {
+        this.players[socketId].token = true;
+        return socketId;
+    }
     // updateDeck() {
 	//     this.deck = [];
     //     for (let i = 0; i < wireLeft; i++) {

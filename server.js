@@ -6,6 +6,7 @@ var Player = require('./player');
 var gameTypeAvailable = new Map();
 var players = [];
 var sockets = [];
+var token;
 
 // This defines the port that we'll be listening to
 server.listen(3000);
@@ -73,16 +74,18 @@ io.sockets.on('connection', function(socket)
             console.log(hand);
             sockets[player].emit('sendCard', { hand : hand });
         }
+
+        io.emit('playerWhoBegin', { first : game.getFirstPlayer(socket.id) });
     });
 
 
     socket.on('cardHover', function (data) {
-        console.log("Une carte est en surbrillance : joueur ", data.joueur, " position : ", data.pos);
+        // console.log("Une carte est en surbrillance : joueur ", data.joueur, " position : ", data.pos);
         socket.broadcast.emit('cardHover', { hover : "test" }); // previens les autres utilisateurs qu'une carte est pre selectionner
     });
 
     socket.on("revealCard", function (data) {
-        console.log("Une carte est a retourner : joueur ", data.joueur, " position : ", data.pos);
+        // console.log("Une carte est a retourner : joueur ", data.joueur, " position : ", data.pos);
         // data.value = game.getCardRevealed();
         io.emit('revealCard', { hand : "test" });
     });
