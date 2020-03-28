@@ -2,6 +2,7 @@ var Game = require('./game');
 var server = require('http').createServer();
 var io = require('socket.io')(server);
 var Player = require('./player');
+var OtherPlayerHand = require('./otherPlayerHand');
 
 var gameTypeAvailable = new Map();
 var players = [];
@@ -63,32 +64,49 @@ io.sockets.on('connection', function(socket)
 
         console.log("Distribution en cours :");
         deck = game.distribute();
+		
         for (let player in players) {
             hand = [];
-            mapPlayer = new Map();
+			otherPlayerHand = []
+			cardPerPlayer = [];
             for (let card in deck) {
-                if (deck[card].player === players[player].id) {
-                    hand.push(deck[card])
-                }
-                else {
-                    if (!mapPlayer[deck[card].player]) {
-                        mapPlayer[deck[card].player] = [];
-                        mapPlayer[deck[card].player].push(deck[card].id);
-                    } 
-                    else {
-                        mapPlayer[deck[card].player].push(deck[card].id);
-                    }
+				let cardDeck = deck[card];
+                if (cardDeck.player === players[player].id) {
+                    hand.push(cardDeck)
+                } else {
+					cardPerPlayer[player] = cardDeck.id;
                 }
             }
-            console.log("Main du joueur ", players[player]);
-            console.log(hand);
-            console.log("Main des autres:", mapPlayer);
+            otherPlayerHand.push({"playerId": player, "cardId": cardPerPlayer[player]});
+
+            console.log("Main du joueur ", hand);
+            console.log("Main des autres:", otherPlayerHand);
+			
             sockets[player].emit('sendCard', { hand });
-            sockets[player].emit('otherCard', { mapPlayer });
+            sockets[player].emit('otherCard', { otherPlayerHand });
             tour = 0;
         }
-
-        io.emit('token', game.getFirstPlayer(socket.id));
+		
+		// Distribution test, a terminer
+		var handPerPlayer = groupBy(deck, playerCards => playerCards.player);
+        for (let player in players) {
+			for (let [key,val] of handPerPlayer) {
+				let otherPlayerHand = new OtherPlayerHand();
+				otherPlayerHand.playerId = player;
+				
+				if (key === player) {
+//		            sockets[player].emit('sendCard', { val });
+				} else {
+					for (let i=0;i<val.length;i++) {
+						otherPlayerHand.cardId.push(val[i].id);
+					}
+				}
+				console.log(otherPlayerHand);
+				// sockets[player].emit('otherCard', { otherPlayerHand });
+			}
+		}
+		
+        io.emit('token', { token : game.getFirstPlayer(socket.id)});
     });
 
 
@@ -116,26 +134,27 @@ io.sockets.on('connection', function(socket)
                 deck = game.distribute();
                 for (let player in players) {
                     hand = [];
-                    mapPlayer = new Map();
+                    otherPlayerHand = [];
                     for (let card in deck) {
                         if (deck[card].player === players[player].id) {
                             hand.push(deck[card])
                         }
                         else {
-                            if (!mapPlayer[deck[card].player]) {
-                                mapPlayer[deck[card].player] = [];
-                                mapPlayer[deck[card].player].push(deck[card].id);
+                            if (!otherPlayerHand[deck[card].player]) {
+                                otherPlayerHand[deck[card].player] = [];
+                                otherPlayerHand[deck[card].player].push(deck[card].id);
                             } 
                             else {
-                                mapPlayer[deck[card].player].push(deck[card].id);
+                                otherPlayerHand[deck[card].player].push(deck[card].id);
                             }
                         }
                     }
                     console.log("Main du joueur ", players[player]);
                     console.log(hand);
-                    console.log("Main des autres:", mapPlayer);
+                    console.log("Main des autres:", otherPlayerHand);
+					//"{"otherPlayerCard":[{"playerId": "GJ-nqwV4Y3VNx648AAAA","cardId":[1,2,3,4]}]}";
                     sockets[player].emit('sendCard', { hand });
-                    sockets[player].emit('otherCard', { mapPlayer });
+                    sockets[player].emit('otherCard', { hand : otherPlayerHand });
                 }
             } else {
                 socket.emit("notyourturn");
@@ -143,3 +162,17 @@ io.sockets.on('connection', function(socket)
         }
     });
 });
+
+function groupBy(list, keyGetter) {
+    const map = new Map();
+    list.forEach((item) => {
+         const key = keyGetter(item);
+         const collection = map.get(key);
+         if (!collection) {
+             map.set(key, [item]);
+         } else {
+             collection.push(item);
+         }
+    });
+    return map;
+}
