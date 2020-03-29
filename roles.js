@@ -1,8 +1,7 @@
 class Roles {
     // Value :
-    // 0 : Empty
-    // 1 : Rope
-    // 2 : Big Ben
+    // 0 : Good
+    // 1 : Bad
     constructor(good, bad) {
         this.roles = [];
         for (let i = 0; i < good; i++) {

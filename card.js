@@ -1,7 +1,7 @@
 class Card {
     // Value :
     // 0 : Empty
-    // 1 : Rope
+    // 1 : Wire
     // 2 : Big Ben
     constructor(id, value) {
         this.id = id;
