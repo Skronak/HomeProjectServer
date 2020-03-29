@@ -41,6 +41,7 @@ class Game {
     initDeck() {
         this.deck = new Deck(this.gameType.wire, this.gameType.empty, this.gameType.bomb);
 
+        console.log(this.deck);
         return this.deck;
     }
 
@@ -62,15 +63,14 @@ class Game {
 
     getCardRevealed(idCard) {
         for (let card in this.deck.deck) {
-            if (this.deck.deck[card].id === idCard) {
-                card = this.deck.deck[card];
-                this.defausse.push(card);
-                this.deck.deck = this.arrayRemove(this.deck.deck, idCard);
+            if (this.deck.deck[card].id === parseInt(idCard)) {
+                let carteSupp = this.deck.deck[card];
+                this.defausse.push(carteSupp);
+                this.deck.deck = this.arrayRemove(this.deck.deck, parseInt(idCard));
 
                 console.log("Defausse :", this.defausse);
                 console.log("Nouveau deck :", this.deck);
-                console.log("Carte retirée :", card);
-                return card;
+                return carteSupp;
             }
         }
         return null;

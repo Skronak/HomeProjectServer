@@ -89,7 +89,7 @@ io.sockets.on('connection', function(socket)
 			}
 
             sockets[player].emit('sendCard', { hand });
-			sockets[player].emit('otherCard', { otherPlayerHand } );
+            sockets[player].emit('otherCard', { otherPlayerHand } );
         }
         
         tour = 0;
@@ -105,7 +105,7 @@ io.sockets.on('connection', function(socket)
     });
 
     socket.on("revealCard", function (idCard) {
-        if (players[socket.id].token === true) {
+        if (players[socket.id] && players[socket.id].token == true) {
             console.log("Une carte a reveal : ", idCard);
             card = game.getCardRevealed(idCard);
             console.log("Carte Revelée : ", card);
