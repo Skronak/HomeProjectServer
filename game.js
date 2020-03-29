@@ -80,7 +80,7 @@ class Game {
         return this.nbPlayer;
     }
 
-    getPlayerToken() {
+    getPlayerIdToken() {
         for (let player in this.players) {
             if (this.players[player].token === true) {
                 return this.players[player].id;
