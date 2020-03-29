@@ -98,7 +98,7 @@ io.sockets.on('connection', function(socket)
     });
 
     socket.on('cardHover', function (idCard) {
-        if (players[socket.id].token === true) {
+        if ( players[socket.id].token === true ) {
             console.log("Une carte est en surbrillance : ", idCard);
             socket.broadcast.emit('cardHover', { hover : idCard }); // previens les autres utilisateurs qu'une carte est pre selectionner
         }
@@ -110,6 +110,7 @@ io.sockets.on('connection', function(socket)
             card = game.getCardRevealed(idCard);
             console.log("Carte Revelée : ", card);
             io.emit('revealCard', { reveal : card });
+            io.emit('defausse', { defausse : game.getDefausse() });
 
             // evenement de reussite
             players[socket.id].token = false;

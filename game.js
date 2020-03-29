@@ -76,6 +76,10 @@ class Game {
         return null;
     }
 
+    getDefausse() {
+        return this.defausse;
+    }
+
     getNbPlayer() {
         return this.nbPlayer;
     }
