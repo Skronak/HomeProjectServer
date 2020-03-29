@@ -1,7 +1,7 @@
-class OtherPlayerHand {
+class PlayerHand {
     constructor() {
         this.playerId = "";
         this.cardId = [];
     }
 }
-module.exports = OtherPlayerHand
+module.exports = PlayerHand

@@ -2,7 +2,7 @@ var Game = require('./game');
 var server = require('http').createServer();
 var io = require('socket.io')(server);
 var Player = require('./player');
-var OtherPlayerHand = require('./otherPlayerHand');
+var PlayerHand = require('./playerHand');
 
 var gameTypeAvailable = new Map();
 var players = [];
@@ -65,50 +65,32 @@ io.sockets.on('connection', function(socket)
         console.log("Distribution en cours :");
         deck = game.distribute();
 		
+		let handPerPlayer = groupBy(deck, playerCards => playerCards.player);
         for (let player in players) {
-            hand = [];
-			otherPlayerHand = []
-			cardPerPlayer = [];
-            for (let card in deck) {
-				let cardDeck = deck[card];
-                if (cardDeck.player === players[player].id) {
-                    hand.push(cardDeck)
-                } else {
-					cardPerPlayer[player] = cardDeck.id;
-                }
-            }
-            otherPlayerHand.push({"playerId": player, "cardId": cardPerPlayer[player]});
+			otherPlayerHand = [];
+			hand = [];
 
-            console.log("Main du joueur ", hand);
-            console.log("Main des autres:", otherPlayerHand);
-			
-            sockets[player].emit('sendCard', { hand });
-            sockets[player].emit('otherCard', { otherPlayerHand });
-            tour = 0;
-        }
-		
-		// Distribution test, a terminer
-		var handPerPlayer = groupBy(deck, playerCards => playerCards.player);
-        for (let player in players) {
-			for (let [key,val] of handPerPlayer) {
-				let otherPlayerHand = new OtherPlayerHand();
-				otherPlayerHand.playerId = player;
-				
+			for (let [key,val] of handPerPlayer) {			
 				if (key === player) {
-//		            sockets[player].emit('sendCard', { val });
-				} else {
 					for (let i=0;i<val.length;i++) {
-						otherPlayerHand.cardId.push(val[i].id);
+						hand.push(val[i]);
 					}
+				} else {
+					playerHand = new PlayerHand();
+					playerHand.playerId = key;
+					
+					for (let i=0;i<val.length;i++) {
+						playerHand.cardId.push(val[i].id);
+					}
+					otherPlayerHand.push(playerHand);
 				}
-				console.log(otherPlayerHand);
-				// sockets[player].emit('otherCard', { otherPlayerHand });
 			}
+
+            sockets[player].emit('sendCard', { hand });
+			sockets[player].emit('otherCard', { otherPlayerHand } );
 		}
-		
         io.emit('token', { token : game.getFirstPlayer(socket.id)});
     });
-
 
     socket.on('cardHover', function (idCard) {
         if (players[socket.id].token === true) {
@@ -134,27 +116,27 @@ io.sockets.on('connection', function(socket)
                 deck = game.distribute();
                 for (let player in players) {
                     hand = [];
-                    otherPlayerHand = [];
+                    playerHand = [];
                     for (let card in deck) {
                         if (deck[card].player === players[player].id) {
                             hand.push(deck[card])
                         }
                         else {
-                            if (!otherPlayerHand[deck[card].player]) {
-                                otherPlayerHand[deck[card].player] = [];
-                                otherPlayerHand[deck[card].player].push(deck[card].id);
+                            if (!playerHand[deck[card].player]) {
+                                playerHand[deck[card].player] = [];
+                                playerHand[deck[card].player].push(deck[card].id);
                             } 
                             else {
-                                otherPlayerHand[deck[card].player].push(deck[card].id);
+                                playerHand[deck[card].player].push(deck[card].id);
                             }
                         }
                     }
                     console.log("Main du joueur ", players[player]);
                     console.log(hand);
-                    console.log("Main des autres:", otherPlayerHand);
+                    console.log("Main des autres:", playerHand);
 					//"{"otherPlayerCard":[{"playerId": "GJ-nqwV4Y3VNx648AAAA","cardId":[1,2,3,4]}]}";
                     sockets[player].emit('sendCard', { hand });
-                    sockets[player].emit('otherCard', { hand : otherPlayerHand });
+                    sockets[player].emit('otherCard', { hand : playerHand });
                 }
             } else {
                 socket.emit("notyourturn");
