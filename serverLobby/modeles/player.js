@@ -1,6 +1,7 @@
 class Player {
-    constructor(name) {
-        this.id;
+    constructor(name, room) {
+        this.name = name;
+        this.room = room;
         this.username;
         this.role;
         this.socket;
