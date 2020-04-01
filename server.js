@@ -109,7 +109,7 @@ io.sockets.on('connection', function(socket)
             console.log("Une carte a reveal : ", idCard);
             card = game.getCardRevealed(idCard);
             console.log("Carte Revelée : ", card);
-            io.emit('revealCard', { reveal : card });
+            io.emit('revealCard', card );
             io.emit('defausse', { defausse : game.getDefausse() });
 
             // evenement de reussite
