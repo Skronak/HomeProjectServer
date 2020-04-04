@@ -92,8 +92,8 @@ io.sockets.on('connection', function(socket)
             sockets[player].emit('otherCard', { otherPlayerHand } );
         }
         
-        tour = 0;
-        round = 0;
+        tour = 0; // TODO: Mauvaise pratique, variable globale a declarer
+        round = 0; // TODO: pareil
         io.emit('token', { token : game.getFirstPlayer(socket.id)});
     });
 
@@ -127,41 +127,46 @@ io.sockets.on('connection', function(socket)
                     io.emit('BadGuysWin');
                     io.emit('FinishedGame');
                 } else {
-                    round++;
-                    io.emit('newTour', { tour : tour });
-                    console.log("Distribution en cours :");
-                    deck = game.distribute();
-
-                    //Envoi des cartes de chaque joueurs. 
-		            let handPerPlayer = groupBy(deck, playerCards => playerCards.player);
-                    for (let player in players) {
-			            otherPlayerHand = [];
-			            hand = [];
-
-			            for (let [key,val] of handPerPlayer) {			
-				            if (key === player) {
-					            for (let i=0;i<val.length;i++) {
-						            hand.push(val[i]);
-					            }
-				            } else {
-					            playerHand = new PlayerHand();
-					            playerHand.playerId = key;
-					
-					            for (let i=0;i<val.length;i++) {
-						            playerHand.cardId.push(val[i].id);
-				    	        }
-					            otherPlayerHand.push(playerHand);
-				            }
-			            }
-                        sockets[player].emit('sendCard', { hand });
-                        sockets[player].emit('otherCard', { otherPlayerHand } );
-                    }
-                }
+					io.emit('endTurn'); // TODO m'envoyer le résultat du tour?
+					socket.emit('newTurnAvailable');
+				}
             } else {
                 socket.emit("notyourturn");
             }
         }
     });
+	
+	socket.on("newTurn", function () {
+		round++;
+		io.emit('newTurn', { tour : tour });
+		console.log("Distribution en cours :");
+		deck = game.distribute();
+
+		//Envoi des cartes de chaque joueurs. 
+		let handPerPlayer = groupBy(deck, playerCards => playerCards.player);
+		for (let player in players) {
+			otherPlayerHand = [];
+			hand = [];
+
+			for (let [key,val] of handPerPlayer) {			
+				if (key === player) {
+					for (let i=0;i<val.length;i++) {
+						hand.push(val[i]);
+					}
+				} else {
+					playerHand = new PlayerHand();
+					playerHand.playerId = key;
+		
+					for (let i=0;i<val.length;i++) {
+						playerHand.cardId.push(val[i].id);
+					}
+					otherPlayerHand.push(playerHand);
+				}
+			}
+			 sockets[player].emit('sendCard', { hand });
+			 sockets[player].emit('otherCard', { otherPlayerHand } );
+		}
+	});
 });
 
 function groupBy(list, keyGetter) {
