@@ -92,8 +92,8 @@ io.sockets.on('connection', function(socket)
             sockets[player].emit('otherCard', { otherPlayerHand } );
         }
         
-        tour = 0; // TODO: Mauvaise pratique, variable globale a declarer
-        round = 0; // TODO: pareil
+        turn = 1; // TODO: a declarer proprement
+        nbCardRevealed = 0; // TODO: pareil
         io.emit('token', { token : game.getFirstPlayer(socket.id)});
     });
 
@@ -111,23 +111,22 @@ io.sockets.on('connection', function(socket)
             console.log("Carte Revelée : ", card);
             io.emit('revealCard', card );
             io.emit('defausse', { defausse : game.getDefausse() });
-
-            // evenement de reussite
+			nbCardRevealed++;
+            
+			// evenement de reussite
             players[socket.id].token = false;
             players[card.player].token = true;
             io.emit('token', { token : game.getPlayerIdToken() });
-        
-            round++;
+                   
             // Assez de carte on étaient tiré pour le tour de jeu
-            if (round >= game.getNbPlayer()) {
-                round = 0;
-                tour++;
+            if (nbCardRevealed >= game.getNbPlayer()) {
+                
                 // Les tours sont terminés car les joueurs n'ont plus qu'une carte
-                if (tour >= 4) {
+                if (turn >= 4) {
                     io.emit('BadGuysWin');
                     io.emit('FinishedGame');
                 } else {
-					io.emit('endTurn'); // TODO m'envoyer le résultat du tour?
+					io.emit('endTurn');
 					socket.emit('newTurnAvailable');
 				}
             } else {
@@ -137,8 +136,10 @@ io.sockets.on('connection', function(socket)
     });
 	
 	socket.on("newTurn", function () {
-		round++;
-		io.emit('newTurn', { tour : tour });
+        turn++;
+		nbCardRevealed = 0;
+		
+		io.emit('newTurn', { turn : turn });
 		console.log("Distribution en cours :");
 		deck = game.distribute();
 

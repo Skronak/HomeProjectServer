@@ -13,7 +13,7 @@ class Game {
     initGame() {
         console.log("Creating Game ...")
 
-        this.gameTypeAvailable.set(1, new GameType(3,1,1,1,0));
+        this.gameTypeAvailable.set(1, new GameType(3,1,1,0,1));
         this.gameTypeAvailable.set(2, new GameType(7,2,1,1,1));
         this.gameTypeAvailable.set(3, new GameType(11,3,1,2,1));
         this.gameTypeAvailable.set(4, new GameType(15,4,1,3,1));
@@ -98,5 +98,6 @@ class Game {
         });
         return arr;
     }
+	
 }
 module.exports = Game;
