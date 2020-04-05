@@ -51,6 +51,7 @@ io.sockets.on('connection', function(socket)
     });
 
     socket.on('startGame', function (data) {
+		// TODO: new game?
         game.startGame(players);
         socket.emit('gameStarted');
 
@@ -110,28 +111,37 @@ io.sockets.on('connection', function(socket)
             card = game.getCardRevealed(idCard);
             console.log("Carte Revelée : ", card);
             io.emit('revealCard', card );
-            io.emit('defausse', { defausse : game.getDefausse() });
+            io.emit('defausse', { defausse : game.getDefausse() }); // TODO: renvoyer les compteur de game
 			nbCardRevealed++;
-            
+
 			// evenement de reussite
             players[socket.id].token = false;
             players[card.player].token = true;
             io.emit('token', { token : game.getPlayerIdToken() });
-                   
-            // Assez de carte on étaient tiré pour le tour de jeu
-            if (nbCardRevealed >= game.getNbPlayer()) {
-                
-                // Les tours sont terminés car les joueurs n'ont plus qu'une carte
-                if (turn >= 4) {
-                    io.emit('BadGuysWin');
-                    io.emit('FinishedGame');
-                } else {
-					io.emit('endTurn');
-					socket.emit('newTurnAvailable');
+		
+			// vérifie l'etat du jeu
+			gameStatus = game.evaluateCard(card);
+			if (gameStatus === 1 ) {
+				io.emit('GoodGuysWin');
+			} else if (gameStatus === -0) {
+				io.emit('BadGuysWin');				
+			} else {
+		
+				// Assez de carte on étaient tiré pour le tour de jeu
+				if (nbCardRevealed >= game.getNbPlayer()) {
+					
+					// Les tours sont terminés car les joueurs n'ont plus qu'une carte
+					if (turn >= 4) {
+						io.emit('BadGuysWin');
+						io.emit('FinishedGame');
+					} else {
+						io.emit('endTurn');
+						socket.emit('newTurnAvailable');
+					}
+				} else {
+					socket.emit("notyourturn");
 				}
-            } else {
-                socket.emit("notyourturn");
-            }
+			}
         }
     });
 	

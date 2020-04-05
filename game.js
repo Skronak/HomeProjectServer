@@ -8,6 +8,8 @@ class Game {
         this.deck = [];
         this.defausse = [];
         this.gameTypeAvailable = new Map();
+		this.secureWireFound = 0;
+		this.difusingWireFound = 0;
     }
 
     initGame() {
@@ -34,7 +36,7 @@ class Game {
         }
         console.log("Number of players: ", this.nbPlayer);
         this.gameType = this.gameTypeAvailable.get(this.nbPlayer);     // utilise type de partie selon nb joueurs
-    
+		
         this.roles = new Roles(this.gameType.goodGuys, this.gameType.badGuys);
         }
 
@@ -99,5 +101,21 @@ class Game {
         return arr;
     }
 	
+	// return 0: /
+	// return -1: bomb found
+	// return 1: all wires found
+	evaluateCard(card) {
+		if (card.value === 0) {
+			this.secureWireFound++;
+		} else if (card.value === 1) {
+			this.difusingWireFound++;
+			if (this.difusingWireFound === this.nbPlayer) {
+				return 1;
+			}
+		} else {
+			return -1;
+		}
+		return 0;
+	}
 }
 module.exports = Game;
