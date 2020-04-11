@@ -53,7 +53,7 @@ io.sockets.on('connection', function(socket)
     socket.on('startGame', function (data) {
 		// TODO: new game?
         game.startGame(players);
-        socket.emit('gameStarted');
+        socket.emit('gameStarted', {maxDefusingWire:game.getMaxDifusingWire(), maxSecureWire:game.getMaxSecureWire()} );
 
         game.initDeck();
 
@@ -111,7 +111,7 @@ io.sockets.on('connection', function(socket)
             card = game.getCardRevealed(idCard);
             console.log("Carte Revelée : ", card);
             io.emit('revealCard', card );
-            io.emit('defausse', { defausse : game.getDefausse() }); // TODO: renvoyer les compteur de game
+
 			nbCardRevealed++;
 
 			// evenement de reussite
@@ -121,6 +121,8 @@ io.sockets.on('connection', function(socket)
 		
 			// vérifie l'etat du jeu
 			gameStatus = game.evaluateCard(card);
+            io.emit('defausse', { defusingWire : game.getDifusingWireFound(), secureWire : game.getSecureWireFound() });
+
 			if (gameStatus === 1 ) {
 				io.emit('GoodGuysWin');
 			} else if (gameStatus === -0) {

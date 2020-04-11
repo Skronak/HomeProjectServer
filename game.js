@@ -38,7 +38,7 @@ class Game {
         this.gameType = this.gameTypeAvailable.get(this.nbPlayer);     // utilise type de partie selon nb joueurs
 		
         this.roles = new Roles(this.gameType.goodGuys, this.gameType.badGuys);
-        }
+    }
 
     initDeck() {
         this.deck = new Deck(this.gameType.wire, this.gameType.empty, this.gameType.bomb);
@@ -85,6 +85,22 @@ class Game {
     getNbPlayer() {
         return this.nbPlayer;
     }
+	
+	getDifusingWireFound() {
+		return this.difusingWireFound;
+	}
+	
+	getSecureWireFound() {
+		return this.secureWireFound;
+	}
+	
+	getMaxDifusingWire(){
+		return this.gameType.wire;
+	}
+	
+	getMaxSecureWire(){
+		return this.gameType.empty;
+	}
 
     getPlayerIdToken() {
         for (let player in this.players) {
@@ -106,12 +122,12 @@ class Game {
 	// return 1: all wires found
 	evaluateCard(card) {
 		if (card.value === 0) {
-			this.secureWireFound++;
-		} else if (card.value === 1) {
 			this.difusingWireFound++;
 			if (this.difusingWireFound === this.nbPlayer) {
 				return 1;
 			}
+		} else if (card.value === 1) {
+			this.secureWireFound++;
 		} else {
 			return -1;
 		}
