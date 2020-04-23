@@ -3,8 +3,8 @@
 Pre-requis: 
 Nodejs
 
-Installation
+Installation:
 npm install socket.io
 
-Lancement
+Lancement:
 node server.js
