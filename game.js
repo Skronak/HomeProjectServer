@@ -121,17 +121,17 @@ class Game {
 	// return -1: bomb found
 	// return 1: all wires found
 	evaluateCard(card) {
-		if (card.value === 0) {
+		if (card.value === 0) { // wire
 			this.difusingWireFound++;
 			if (this.difusingWireFound === this.nbPlayer) {
 				return 1;
 			}
-		} else if (card.value === 1) {
+		} else if (card.value === 1) { // secure
 			this.secureWireFound++;
-		} else {
 			return -1;
+		} else { // bigben
+			return 0;
 		}
-		return 0;
 	}
 }
 module.exports = Game;

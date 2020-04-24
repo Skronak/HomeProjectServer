@@ -53,7 +53,7 @@ io.sockets.on('connection', function(socket)
     socket.on('startGame', function (data) {
 		// TODO: new game?
         game.startGame(players);
-        socket.emit('gameStarted', {maxDefusingWire:game.getMaxDifusingWire(), maxSecureWire:game.getMaxSecureWire()} );
+        io.emit('gameStarted', {maxDefusingWire:game.getMaxDifusingWire(), maxSecureWire:game.getMaxSecureWire()} );
 
         game.initDeck();
 
@@ -122,14 +122,14 @@ io.sockets.on('connection', function(socket)
 			// vérifie l'etat du jeu
 			gameStatus = game.evaluateCard(card);
             io.emit('defausse', { defusingWire : game.getDifusingWireFound(), secureWire : game.getSecureWireFound() });
-
+			
 			if (gameStatus === 1 ) {
 				io.emit('GoodGuysWin');
-			} else if (gameStatus === -0) {
+			} else if (gameStatus === 0) {
 				io.emit('BadGuysWin');				
 			} else {
 		
-				// Assez de carte on étaient tiré pour le tour de jeu
+				// Assez de carte on étaient tiré pour le tour de jeu			
 				if (nbCardRevealed >= game.getNbPlayer()) {
 					
 					// Les tours sont terminés car les joueurs n'ont plus qu'une carte
