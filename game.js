@@ -42,8 +42,8 @@ class Game {
 
     initDeck() {
         this.deck = new Deck(this.gameType.wire, this.gameType.empty, this.gameType.bomb);
-
         console.log(this.deck);
+
         return this.deck;
     }
 
@@ -58,6 +58,31 @@ class Game {
         return this.deck.distributeCard(this.players);
     }
 
+	// return 0: /
+	// return -1: bomb found
+	// return 1: all wires found
+	evaluateCard(card) {
+		if (card.value === 0) { // wire
+			this.difusingWireFound++;
+			if (this.difusingWireFound === this.nbPlayer) {
+				return 1;
+			}
+		} else if (card.value === 1) { // secure
+			this.secureWireFound++;
+			return -1;
+		} else { // bigben
+			return 0;
+		}
+	}
+	
+	evaluatePlayersReady() {
+		let ready = false;
+        for (let player in this.players) {
+			ready = this.players[player].handFlipped;
+		}
+		return ready;
+	}
+	
     getFirstPlayer(socketId) {
         this.players[socketId].token = true;
         return socketId;
@@ -77,7 +102,7 @@ class Game {
         }
         return null;
     }
-
+	
     getDefausse() {
         return this.defausse;
     }
@@ -116,22 +141,6 @@ class Game {
         });
         return arr;
     }
-	
-	// return 0: /
-	// return -1: bomb found
-	// return 1: all wires found
-	evaluateCard(card) {
-		if (card.value === 0) { // wire
-			this.difusingWireFound++;
-			if (this.difusingWireFound === this.nbPlayer) {
-				return 1;
-			}
-		} else if (card.value === 1) { // secure
-			this.secureWireFound++;
-			return -1;
-		} else { // bigben
-			return 0;
-		}
-	}
+
 }
 module.exports = Game;

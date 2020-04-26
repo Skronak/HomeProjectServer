@@ -5,6 +5,7 @@ class Player {
         this.hand = [];
         this.token = false;
         this.role = "";
+		this.handFlipped = false;
     }
 
     setRole(role) {

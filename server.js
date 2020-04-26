@@ -176,10 +176,22 @@ io.sockets.on('connection', function(socket)
 					otherPlayerHand.push(playerHand);
 				}
 			}
-			 sockets[player].emit('sendCard', { hand });
-			 sockets[player].emit('otherCard', { otherPlayerHand } );
+			
+			player.handFlipped = false;
+			sockets[player].emit('sendCard', { hand });
+			sockets[player].emit('otherCard', { otherPlayerHand } );
 		}
 	});
+	
+	socket.on("flipHand", function() {
+		players[socket.id].handFlipped = true;
+        socket.broadcast.emit('handFlip', {id: socket.id} ); // previens les autres utilisateurs qu'une carte est pre selectionner
+		console.log("flipHand");
+		if (game.evaluatePlayersReady()) {
+			io.emit("allHandFlipped");			
+		}
+	});
+
 });
 
 function groupBy(list, keyGetter) {
