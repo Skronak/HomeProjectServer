@@ -1,0 +1,25 @@
+{
+  "name": "HomeProjectServer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "card.js",
+  "dependencies": {
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Skronak/HomeProjectServer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Skronak/HomeProjectServer/issues"
+  },
+  "homepage": "https://github.com/Skronak/HomeProjectServer#readme"
+}
