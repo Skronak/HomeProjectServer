@@ -1,14 +1,13 @@
+var RoleType = require('./constants/roleType');
+
 class Roles {
-    // Value :
-    // 0 : Good
-    // 1 : Bad
     constructor(good, bad) {
         this.roles = [];
         for (let i = 0; i < good; i++) {
-            this.roles.push(0);
+            this.roles.push(RoleType.SHERLOCK);
         }
         for (let i = 0; i < bad; i++) {
-            this.roles.push(1);
+            this.roles.push(RoleType.MORIARTY);
         }
         this.shuffle(this.roles);
 

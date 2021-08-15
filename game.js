@@ -1,6 +1,8 @@
 var GameType = require('./gametype');
 var Deck = require('./deck');
 var Roles = require('./roles');
+var CardType = require('./constants/cardType');
+let Status = require('./constants/gameStatus.js');
 
 class Game {
     constructor() {
@@ -9,15 +11,18 @@ class Game {
         this.defausse = [];
         this.gameTypeAvailable = new Map();
 		this.secureWireFound = 0;
-		this.difusingWireFound = 0;
+        this.difusingWireFound = 0;
+        this.currentStatus = Status.INIT;
+        this.turn = 1;
+        this.nbCardRevealed = 0;
+        this.nbPlayer = 0;
+
+        this.initGame();
     }
 
     initGame() {
-        console.log("Creating Game ...")
-
         this.gameTypeAvailable.set(1, new GameType(3,1,1,0,1));
         this.gameTypeAvailable.set(2, new GameType(7,2,1,1,1));
-// debug        this.gameTypeAvailable.set(2, new GameType(2,7,1,1,1));
         this.gameTypeAvailable.set(3, new GameType(11,3,1,2,1));
         this.gameTypeAvailable.set(4, new GameType(15,4,1,3,1));
         this.gameTypeAvailable.set(5, new GameType(19,5,1,3,2));
@@ -29,21 +34,19 @@ class Game {
     }
 
     startGame(players) {
-        this.players = players;
         console.log('Game start !');
-        this.nbPlayer = 0;
+
+        this.players = players;
         for (let player in players) {
             this.nbPlayer++;
         }
-        console.log("Number of players: ", this.nbPlayer);
-        this.gameType = this.gameTypeAvailable.get(this.nbPlayer);     // utilise type de partie selon nb joueurs
-		
+
+        this.gameType = this.gameTypeAvailable.get(this.nbPlayer);
         this.roles = new Roles(this.gameType.goodGuys, this.gameType.badGuys);
     }
 
     initDeck() {
-        this.deck = new Deck(this.gameType.wire, this.gameType.empty, this.gameType.bomb);
-        console.log(this.deck);
+        this.deck = new Deck(this.gameType.empty, this.gameType.wire, this.gameType.bomb);
 
         return this.deck;
     }
@@ -59,19 +62,16 @@ class Game {
         return this.deck.distributeCard(this.players);
     }
 
-	// return 0: /
-	// return -1: bomb found
-	// return 1: all wires found
 	evaluateCard(card) {
-		if (card.value === 0) { // wire
+		if (card.value === CardType.WIRE) {
 			this.difusingWireFound++;
 			if (this.difusingWireFound === this.nbPlayer) {
 				return 1;
 			}
-		} else if (card.value === 1) { // secure
+		} else if (card.value === CardType.EMPTY) {
 			this.secureWireFound++;
 			return -1;
-		} else { // bigben
+		} else {
 			return 0;
 		}
 	}
@@ -103,7 +103,31 @@ class Game {
         }
         return null;
     }
-	
+
+    fillPlayerHands() {      
+        let hands = {
+            otherPlayerHand : [],
+            hand : []
+        };
+
+        for (let [key,val] of handPerPlayer) {			
+            if (key === player) {
+                for (let i=0;i<val.length;i++) {
+                    hands.hand.push(val[i]);
+                }
+            } else {
+                let playerHand = new PlayerHand();
+                playerHand.playerId = key;
+                
+                for (let i=0;i<val.length;i++) {
+                    playerHand.cardId.push(val[i].id);
+                }
+                hands.otherPlayerHand.push(playerHand);
+            }
+        }
+        return hands;
+    }
+
     getDefausse() {
         return this.defausse;
     }
