@@ -9,8 +9,8 @@ var players = [];
 var sockets = [];
 var token;
 
-// This defines the port that we'll be listening to
-server.listen(3000);
+let serverPort = process.argv[2] ? process.argv[2]:3000;
+server.listen(serverPort);
 console.log ('Server Started');
 
 let game = new Game();
@@ -24,10 +24,10 @@ io.sockets.on('connection', function(socket)
 	console.log('User connected: ' + socket.id);
 	socket.emit('connectionEstabilished', {id: socket.id}); // retourn l'id de cette session
 
-    socket.on('register', (playerName) => {
-        console.log('User logged: ' + socket.id);
+    socket.on('register', (evt) => {
+        console.log(`User ${socket.id} logged as ${ JSON.stringify(evt.data)}`);
         let player = new Player();
-        player.username = playerName;
+        player.username = evt.data;
         player.id = socket.id;
         players[socket.id] = player;
         sockets[socket.id] = socket;
@@ -65,8 +65,7 @@ io.sockets.on('connection', function(socket)
 
         console.log("Distribution en cours :");
         deck = game.distribute();
-        
-        
+
         //Envoi des cartes de chaque joueurs. 
 		let handPerPlayer = groupBy(deck, playerCards => playerCards.player);
         for (let player in players) {
@@ -105,12 +104,12 @@ io.sockets.on('connection', function(socket)
         }
     });
 
-    socket.on("revealCard", function (idCard) {
+    socket.on("revealCard", function (cardToReveal) {
         if (players[socket.id] && players[socket.id].token == true) {
-            console.log("Une carte a reveal : ", idCard);
-            card = game.getCardRevealed(idCard);
+            console.log("Une carte a devoiler : ", cardToReveal.data);
+            card = game.getCardRevealed(cardToReveal.data);
             console.log("Carte Revelée : ", card);
-            io.emit('revealCard', card );
+            io.emit('revealCard', { card } );
 
 			nbCardRevealed++;
 
@@ -124,9 +123,9 @@ io.sockets.on('connection', function(socket)
             io.emit('defausse', { defusingWire : game.getDifusingWireFound(), secureWire : game.getSecureWireFound() });
 			
 			if (gameStatus === 1 ) {
-				io.emit('GoodGuysWin');
+				io.emit('GoodGuysWin', {});
 			} else if (gameStatus === 0) {
-				io.emit('BadGuysWin');				
+				io.emit('BadGuysWin', {});
 			} else {
 		
 				// Assez de carte on étaient tiré pour le tour de jeu			
@@ -134,14 +133,14 @@ io.sockets.on('connection', function(socket)
 					
 					// Les tours sont terminés car les joueurs n'ont plus qu'une carte
 					if (turn >= 4) {
-						io.emit('BadGuysWin');
-						io.emit('FinishedGame');
+						io.emit('BadGuysWin', {});
+						io.emit('FinishedGame', {});
 					} else {
-						io.emit('endTurn');
-						socket.emit('newTurnAvailable');
+						io.emit('endTurn', {});
+						socket.emit('newTurnAvailable', {});
 					}
 				} else {
-					socket.emit("notyourturn");
+					socket.emit("notyourturn", {});
 				}
 			}
         }
@@ -186,9 +185,8 @@ io.sockets.on('connection', function(socket)
 	socket.on("flipHand", function() {
 		players[socket.id].handFlipped = true;
         socket.broadcast.emit('handFlip', {id: socket.id} ); // previens les autres utilisateurs qu'une carte est pre selectionner
-		console.log("flipHand");
 		if (game.evaluatePlayersReady()) {
-			io.emit("allHandFlipped");			
+			io.emit("allHandFlipped", {});
 		}
 	});
 

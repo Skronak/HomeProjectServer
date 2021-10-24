@@ -59,7 +59,7 @@ class EventListener {
     };
     
     startGame = (socket) => {
-        let player = players[socket.id];
+        let player = this.players[socket.id];
         let game = new Game();
         let room = new Room(player.roomId, game);
         this.rooms.push(room);
@@ -123,9 +123,9 @@ class EventListener {
             this.io.emit('defausse', { defusingWire : this.game.getDifusingWireFound(), secureWire : this.game.getSecureWireFound() });
             
             if (this.gameStatus === 1 ) {
-                this.io.emit('GoodGuysWin');
+                this.io.emit('GoodGuysWin', {});
             } else if (this.gameStatus === 0) {
-                this.io.emit('BadGuysWin');				
+                this.io.emit('BadGuysWin', {});
             } else {
         
                 // Assez de carte ont été tiré pour le tour de jeu
@@ -133,14 +133,14 @@ class EventListener {
                     
                     // Les tours sont terminés car les joueurs n'ont plus qu'une carte
                     if (this.game.turn >= 4) {
-                        this.io.emit('BadGuysWin');
-                        this.io.emit('Finishedthis.game');
+                        this.io.emit('BadGuysWin', {});
+                        this.io.emit('Finishedthis.game', {});
                     } else {
-                        this.io.emit('endTurn');
-                        socket.emit('newTurnAvailable');
+                        this.io.emit('endTurn', {});
+                        socket.emit('newTurnAvailable', {});
                     }
                 } else {
-                    socket.emit("notyourturn");
+                    socket.emit("notyourturn", {});
                 }
             }
         }
@@ -189,7 +189,7 @@ class EventListener {
         socket.broadcast.to(player.roomId).emit('handFlip', {id: socket.id} );
 
         if (this.game.evaluatethis.playersReady()) {
-            this.io.emit("allHandFlipped");			
+            this.io.emit("allHandFlipped", {});
         }
     };
 

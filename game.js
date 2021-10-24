@@ -90,18 +90,16 @@ class Game {
     }
 
     getCardRevealed(idCard) {
-        for (let card in this.deck.deck) {
-            if (this.deck.deck[card].id === parseInt(idCard)) {
-                let carteSupp = this.deck.deck[card];
-                this.defausse.push(carteSupp);
-                this.deck.deck = this.arrayRemove(this.deck.deck, parseInt(idCard));
+        let card = this.deck.cards.filter(obj => {
+          return obj.id === parseInt(idCard);
+        });
+        console.log(card);
+                this.defausse.push(card[0]);
+                this.deck.cards = this.arrayRemove(this.deck.cards, parseInt(idCard));
 
                 console.log("Defausse :", this.defausse);
                 console.log("Nouveau deck :", this.deck);
-                return carteSupp;
-            }
-        }
-        return null;
+                return card[0];
     }
 
     fillPlayerHands() {      

@@ -5,24 +5,23 @@ class Deck {
         this.empty = empty;
         this.wire = wire;
         this.bomb = bomb;
-        this.deck = [];
+        this.cards = [];
         this.createDeck();
     }
 
     createDeck() {
         let idCard = 0;
         for (let i = 0; i < this.empty; i++) {
-            this.deck.push(new Card(idCard++, 0));
+            this.cards.push(new Card(idCard++, 0));
         }
         for (let i = 0; i < this.wire; i++) {
-            this.deck.push(new Card(idCard++, 1));
+            this.cards.push(new Card(idCard++, 1));
         }
         for (let i = 0; i < this.bomb; i++) {
-            this.deck.push(new Card(idCard++, 2));
+            this.cards.push(new Card(idCard++, 2));
         }
-        this.shuffle(this.deck);
-        console.log("Deck created :");
-        console.log(this.deck);
+        this.shuffle(this.cards);
+        console.log('Deck created : ${this.cards}');
     }
 
     distributeCard(players) {
@@ -33,14 +32,14 @@ class Deck {
             list.push(player);
         
         let nbJoueur = list.length;
-        for (let card = 0 ; card < this.deck.length ; card++) {
+        for (let card = 0 ; card < this.cards.length ; card++) {
             if (joueurCourant >= nbJoueur) {
                 joueurCourant = 0;
             }
-            this.deck[card].player = players[list[joueurCourant]].id;
+            this.cards[card].player = players[list[joueurCourant]].id;
             joueurCourant++;
         }
-        return this.deck;
+        return this.cards;
     }
 
     shuffle(a) {
