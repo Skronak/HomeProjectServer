@@ -15,18 +15,13 @@ socket1.on('connect', () => {
     console.log('connected');
     socket1.emit('register','Player1');
 
-    socket1.on('userConnect', (data) => {
-        console.log('user connected to lobby ' + data)
-    });
-
     socket1.on('playerConnection', (player) => {
+        console.log(`P1: playerConnection: ${player.id}`)
+
         setTimeout(()=> {
             //ask P1 to start
             socket1.emit('startGame');
         },2000);        
-    });
-
-    socket1.on('connectionEstabilished',({id})=> {
     });
 
     socket1.on('sendCard', (cards) => {
@@ -45,12 +40,15 @@ socket1.on('connect', () => {
 socket2.on('connect', () => {
     socket2.emit('register','Player2');
     socket2.on('userConnect', (data) => {
-        console.log('user connected to lobby ' + data)
+        console.log(`userConnect: ${data}`);
     });
+
     socket2.on('playerConnection', (player) => {
-        console.log('P2: userconnection: '+player.username);
+        console.log(`P2: playerConnection: ${player.id}`)
     });
+
     socket2.on('connectionEstabilished',({id})=> {
+        console.log('connectionEstabilished'+id);
     });
 
     socket2.on('sendCard', (cards) => {
@@ -59,7 +57,7 @@ socket2.on('connect', () => {
     });
     socket2.on('token', (data) => {
         if (data.token == socket2.id) {
-            console.log("joueur "+socket2.id+" demande carte "+cardsSocket1[0].id);
+            console.log("Player "+socket2.id+" demande carte "+cardsSocket1[0].id);
             socket2.emit('revealCard', cardsSocket1[0].id);
         }
     })
