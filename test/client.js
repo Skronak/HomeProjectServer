@@ -12,7 +12,7 @@ console.log('Started on port '+ serverPort);
 let cardsSocket1, cardsSocket2;
 
 socket1.on('connect', () => {
-    console.log('connected');
+    console.log('P1 connected');
     socket1.emit('register','Player1');
 
     socket1.on('playerConnection', (player) => {
@@ -38,6 +38,7 @@ socket1.on('connect', () => {
 });
 
 socket2.on('connect', () => {
+    console.log('P2 connected');
     socket2.emit('register','Player2');
     socket2.on('userConnect', (data) => {
         console.log(`userConnect: ${data}`);
