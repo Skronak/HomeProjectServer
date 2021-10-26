@@ -6,7 +6,7 @@ class Lobby {
     constructor(socketIO) {
         this.io = socketIO;
         this.rooms = ["Hanin", "Naehara", "Kzee"];
-        this.clients = [];
+        this.clients = {};
 
         this.listen();
     }
@@ -20,7 +20,7 @@ class Lobby {
     }
 
     registerUser (socket, playerName) {
-        console.log('registerUser' + socket.id);
+        console.log(`registerUser ${socket.id}`);
         socket.join(LOBBY);
 
         let player = new Player();
@@ -34,14 +34,14 @@ class Lobby {
     }
 
     informUsers (socket, currentPlayer) {
-        const other = this.io.sockets.adapter.rooms.get(currentPlayer.roomId);
+        //const other = this.io.sockets.adapter.rooms.get(currentPlayer.roomId);
         // Renvoie la liste des autres player a celui connecte
-        //console.log(this.clients.filter(player => player.id != currentPlayer.id ));
-        this.clients.filter(player => player.id != currentPlayer.id )
-               .map(player => {
-                    socket.to(LOBBY).emit('playerConnection', player);
-                });
-
+        Object.keys(this.clients).filter(clientId => this.clients[clientId].id !== currentPlayer.id)
+            .forEach(client=> {
+                    console.log('client '+client);
+                    socket.to(LOBBY).emit('playerConnection', this.clients[client].id);
+                }
+            );
         socket.broadcast.to(LOBBY).emit('playerConnection', currentPlayer);
     }
 
