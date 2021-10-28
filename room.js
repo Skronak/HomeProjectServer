@@ -1,6 +1,17 @@
+const ROOM_STATUTS = {
+    PENDING: 'pending',
+    READY: 'ready',
+    BUSY: 'busy'
+};
+
 class Room {
-    constructor(game) {
-        this.id = id,
-        this.game = new Game()
+    constructor(id) {
+        this.id = id;
+        this.status=ROOM_STATUTS.PENDING;
+        this.nbClients=0;
+        this.clientIds=[];
+        this.game = null;
     }
 }
+
+module.exports = Room
