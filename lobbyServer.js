@@ -4,6 +4,6 @@ let Lobby = require('./lobby');
 
 let serverPort = process.argv[2] ? process.argv[2]:3000;
 server.listen(serverPort);
-console.log("Lobby started on port " + serverPort);
+new Lobby(io);
 
-let lobby = new Lobby(io);
+console.log(`Lobby started on port ${serverPort}`);
