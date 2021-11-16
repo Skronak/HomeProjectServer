@@ -1,10 +1,9 @@
 require('log-timestamp');
 
-const LOBBY = "lobby";
 let Player = require('./player');
 let Room = require('./room');
 
-const ROOM_ID = ["Hanin", "Naehara", "Kzee"];
+const ROOM_ID = ["Lobby", "Hanin", "Naehara", "Kzee"];
 const ROOM_STATUTS = {
     PENDING: 'pending',
     READY: 'ready',
@@ -22,69 +21,75 @@ class Lobby {
     }
 
     listen() {
-        ROOM_ID.forEach(roomId => this.rooms[roomId] =new Room(roomId));
+        ROOM_ID.forEach(roomId => this.rooms[roomId] = new Room(roomId, ROOM_STATUTS.PENDING, 0, []));
         this.io.sockets.on('connection', (socket) => {
             socket.on('register', (data) => this.registerUser(socket, data));
             socket.on('addRoom', (room) => this.addRoom(socket, room));
             socket.on('joinRoom', (room) => this.joinRoom(socket, room));
             socket.on('disconnect', () => this.disconnectUser(socket));
+            socket.on('chat', () => this.chat(socket));
         });
     }
-
+    chat(socket) {
+        console.log('trying to chat to'+socket.rooms[0]);
+        this.io.to(socket.rooms[0]).emit('chat', 'hello');
+    }
     registerUser (socket, playerName) {
         console.log(`registerUser ${socket.id}`);
-        socket.join(LOBBY);
+        socket.join("Lobby");
 
-        let player = new Player();
-        player.username = playerName;
-        player.id = socket.id;
-        player.roomId = LOBBY;
+        let player = new Player(socket.id, playerName, "Lobby");
         this.clients[player.id] = player;
 
         this.informUsers(socket, player);
         this.listRooms(socket);
     }
 
+    // inform utilisateur d'une nouvelle connexion
     informUsers (socket, currentPlayer) {
         //const other = this.io.sockets.adapter.rooms.get(currentPlayer.roomId);
-        // Renvoie la liste des autres cvlient a celui connecte
+        // Renvoie la liste des autres client a celui connecte
         Object.keys(this.clients).filter(clientId => this.clients[clientId].id !== currentPlayer.id)
             .forEach(client=> {
-                socket.to(LOBBY).emit('playerConnection', this.clients[client].id);
+                socket.emit('playerConnection', this.clients[client]);
             });
-        setTimeout(()=> {
-            socket.broadcast.to(LOBBY).emit('playerConnection', currentPlayer); // for testing, too fast otherwise
-        },1000);
+            socket.broadcast.to("Lobby").emit('playerConnection', currentPlayer); // for testing, too fast otherwise
     }
 
     listRooms(socket) {
-        socket.emit('roomList', this.rooms);
+        socket.emit('roomList', Object.values(this.rooms).map(room => ({
+            id: room.id,
+            status: room.status,
+            nbClients: this.getNbClientsInRoom(room.id)})));
     }
 
-    getRoomDetails(socket, roomId) {
+    getNbClientsInRoom(roomId) {
+        const clients = this.io.sockets.adapter.rooms[roomId];
+        return clients? clients.length : 0;
+    }
+
+    sendRoomInfos(socket, rooms) {
         //https://stackoverflow.com/questions/19044660/socket-io-get-rooms-which-socket-is-currently-in
         //https://newbedev.com/socket-io-rooms-get-list-of-clients-in-specific-room
-        //const clients = io.sockets.adapter.rooms.get('Room Name');
+        //const clients = io.sockets.adapter.rooms.get('Room Name');cle
         //const clientSocket = io.sockets.sockets.get(clientId);
 
-        console.log('detailsRoom');
+        let resultRoom = Object.values(rooms).map(room => ({
+            id:room.id,
+            status: room.status,
+            nbClientss: room.nbClientss,
+            clientIds: room.clientIds}));
 
-        const clients = this.io.sockets.adapter.rooms[roomId].sockets;
-        this.rooms.length = room ? Object.keys(clients).length : 0;
-        socket.emit('roomDetail', this.room);
+        socket.emit('roomInfos', resultRoom);
     }
 
-    joinRoom (socket, roomId) {
+    joinRoom(socket, roomId) {
         console.log(`joinRoom: ${socket.id} => ${roomId}`);
+        socket.leaveAll();
+        socket.join(roomId);
+        console.log(socket.rooms);
 
-        if(this.rooms.hasOwnProperty(roomId)) {
-            socket.join(roomId);//attention room sont automatiquement delete si personne dedans
-            socket.leave(LOBBY);
-
-            const clients = this.io.sockets.adapter.rooms[roomId].sockets;
-            this.rooms[roomId] = Object.keys(clients).length;
-            this.getRoomDetails(socket, this.roomss[roomId]);
-        }
+        this.sendRoomInfos(socket, this.rooms);
     }
     
     addRoom (socket, room) {
